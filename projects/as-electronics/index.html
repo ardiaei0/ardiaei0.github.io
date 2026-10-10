@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AS Electronics — Phones, Audio, Smart Home & More</title>
+  <meta name="description" content="AS Electronics — carefully selected phones, audio, wearables, chargers, cases, car accessories, gaming and smart home gear. Fast delivery, secure checkout.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+  <div class="promo-ticker">
+    <div class="promo-ticker-track">
+      <span data-i18n="ticker_1">Secure checkout on every order</span>
+      <span data-i18n="ticker_2">Fast, reliable delivery</span>
+      <span data-i18n="ticker_3">Support replies within 1 business day</span>
+      <span data-i18n="ticker_1">Secure checkout on every order</span>
+      <span data-i18n="ticker_2">Fast, reliable delivery</span>
+      <span data-i18n="ticker_3">Support replies within 1 business day</span>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <div class="container header-top">
+      <a href="index.html" class="logo">AS Electronics</a>
+
+      <form class="header-search" id="header-search" role="search">
+        <input type="search" name="q" data-i18n-placeholder="search_placeholder" placeholder="Search products…">
+        <button type="submit" aria-label="Search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></button>
+      </form>
+
+      <div class="header-actions">
+        <button class="search-toggle" id="search-toggle" type="button" aria-label="Toggle search" aria-expanded="false">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </button>
+        <button class="lang-toggle" id="lang-toggle" type="button">EN</button>
+        <button class="cart-btn" id="cart-btn" aria-label="Go to checkout">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          <span class="cart-label-text" data-i18n="cart_label">Cart</span> <span class="cart-count" id="cart-count">0</span>
+        </button>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+
+    <nav class="main-nav" id="main-nav">
+      <div class="main-nav-inner container">
+        <span class="nav-menu-label" data-i18n="nav_menu_label">Menu</span>
+        <a href="index.html" data-i18n="nav_home">Home</a>
+        <div class="nav-item-dropdown">
+          <a href="products.html" data-i18n="nav_all_products">All Products</a>
+          <button class="nav-dropdown-toggle" type="button" aria-label="Toggle category list" aria-expanded="false">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+          <div class="nav-dropdown" id="nav-categories-menu"></div>
+        </div>
+        <a href="checkout.html" data-i18n="nav_checkout">Checkout</a>
+        <a href="contact.html" data-i18n="nav_contact">Contact</a>
+        <p class="nav-tagline">AS Electronics</p>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+
+    <section class="categories-section top-products">
+      <div class="container">
+        <div class="carousel">
+          <div class="carousel-track" id="top-products"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="hero">
+      <div class="container">
+        <div class="hero-banner" id="hero-banner"></div>
+      </div>
+    </section>
+
+    <section class="product-section alt">
+      <div class="container">
+        <div class="section-head">
+          <h2 data-i18n="all_products_heading">All Products</h2>
+          <p data-i18n="featured_sub">Everything we carry, all in one place.</p>
+        </div>
+        <div id="product-rows"></div>
+        <div class="section-cta">
+          <a href="products.html" class="btn btn-ghost" data-i18n="view_all_products">View All Products →</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="pillars">
+      <div class="container pillars-inner">
+        <div class="pillar">
+          <span class="pillar-icon">✓</span>
+          <div><strong data-i18n="pillar1_title">Carefully Selected</strong><p data-i18n="pillar1_desc">Every product is chosen and tested before it's listed.</p></div>
+        </div>
+        <div class="pillar">
+          <span class="pillar-icon">⚡</span>
+          <div><strong data-i18n="pillar2_title">Fast Delivery</strong><p data-i18n="pillar2_desc">Orders shipped quickly, right to your door.</p></div>
+        </div>
+        <div class="pillar">
+          <span class="pillar-icon">🔒</span>
+          <div><strong data-i18n="pillar3_title">Secure Checkout</strong><p data-i18n="pillar3_desc">Encrypted payments and a clear, three-step order process.</p></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>
+        <a href="index.html" class="logo">AS Electronics</a>
+        <p>© <span id="year"></span> AS Electronics. <span data-i18n="footer_rights">All rights reserved.</span></p>
+      </div>
+      <div class="footer-links">
+        <a href="products.html" data-i18n="nav_all_products">All Products</a>
+        <a href="checkout.html" data-i18n="nav_checkout">Checkout</a>
+        <a href="contact.html" data-i18n="nav_contact">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/products-data.js"></script>
+  <script src="assets/i18n.js"></script>
+  <script src="assets/store.js"></script>
+  <script>
+    function renderHeroBanner(elementId, product) {
+      const el = document.getElementById(elementId);
+      el.innerHTML = `
+        <div class="hero-banner-media"${thumbStyle(product)}>${product.image ? "" : product.icon}</div>
+        <div class="hero-banner-content">
+          <span class="spotlight-badge">${product.originalPrice ? t("spotlight_badge") : t("featured_badge")}</span>
+          <h1>${localizedName(product)}</h1>
+          <p class="spotlight-desc">${localizedDesc(product)}</p>
+          <span class="price price-large">${formatEuro(product.price)}${product.originalPrice ? ` <span class="price-original">${formatEuro(product.originalPrice)}</span>` : ""}</span>
+          <div class="hero-banner-ctas">
+            <a href="product.html?slug=${product.slug}" class="btn btn-ghost hero-banner-cta">${t("view_details")}</a>
+            ${product.variants
+              ? `<a href="product.html?slug=${product.slug}" class="btn btn-primary hero-banner-cta">${t("choose_options")}</a>`
+              : `<button class="btn btn-primary hero-banner-cta add-btn" data-slug="${product.slug}" type="button">${t("add_to_cart")}</button>`}
+          </div>
+        </div>
+      `;
+      wireAddButtons(el);
+
+      el.addEventListener("click", (event) => {
+        if (event.target.closest(".hero-banner-ctas")) return;
+        window.location.href = `product.html?slug=${product.slug}`;
+      });
+    }
+
+    const dealProduct = getProductBySlug("rimova-case");
+    renderHeroBanner("hero-banner", dealProduct);
+
+    const topProducts = document.getElementById("top-products");
+    topProducts.innerHTML = PRODUCTS.map(productCardHtml).join("");
+    wireAddButtons(topProducts);
+
+    // One horizontally scrolling row per category that has products.
+    const productRows = document.getElementById("product-rows");
+    productRows.innerHTML = CATEGORIES
+      .map((cat) => ({ cat, items: PRODUCTS.filter((p) => p.category === cat.slug) }))
+      .filter(({ items }) => items.length > 0)
+      .map(({ cat, items }) => `
+        <div class="product-row">
+          <div class="product-row-head">
+            <h3>${localizedCategoryName(cat)}</h3>
+            <a href="products.html?cat=${cat.slug}">${t("see_all")}</a>
+          </div>
+          <div class="carousel">
+            <div class="carousel-track">${items.map(productCardHtml).join("")}</div>
+          </div>
+        </div>
+      `).join("");
+    wireAddButtons(productRows);
+
+    // Carousels: add prev/next arrows that page through the track, hiding each at its end.
+    const chevron = (d) => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
+    document.querySelectorAll(".carousel").forEach((carousel) => {
+      const track = carousel.querySelector(".carousel-track");
+      carousel.insertAdjacentHTML("beforeend", `
+        <button type="button" class="carousel-btn carousel-prev" aria-label="Previous">${chevron("M15 18l-6-6 6-6")}</button>
+        <button type="button" class="carousel-btn carousel-next" aria-label="Next">${chevron("M9 18l6-6-6-6")}</button>
+      `);
+      const prev = carousel.querySelector(".carousel-prev");
+      const next = carousel.querySelector(".carousel-next");
+      const page = (dir) => track.scrollBy({ left: dir * track.clientWidth * 0.8 });
+      prev.addEventListener("click", () => page(-1));
+      next.addEventListener("click", () => page(1));
+      const updateArrows = () => {
+        prev.classList.toggle("is-hidden", track.scrollLeft <= 4);
+        next.classList.toggle("is-hidden", track.scrollLeft + track.clientWidth >= track.scrollWidth - 4);
+      };
+      track.addEventListener("scroll", updateArrows, { passive: true });
+      window.addEventListener("resize", updateArrows);
+      updateArrows();
+    });
+
+    // "Back to top" pill that appears once the visitor has scrolled a screen down.
+    document.body.insertAdjacentHTML("beforeend", `
+      <button type="button" class="back-to-top" id="back-to-top">${chevron("M18 15l-6-6-6 6")}${t("back_to_top")}</button>
+    `);
+    const backToTop = document.getElementById("back-to-top");
+    backToTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+    const updateBackToTop = () => backToTop.classList.toggle("visible", window.scrollY > window.innerHeight);
+    window.addEventListener("scroll", updateBackToTop, { passive: true });
+    updateBackToTop();
+
+    // Scroll-linked reveal: each block fades, un-blurs and rises as it enters the viewport.
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const revealEls = document.querySelectorAll("main .section-head, main .carousel, .product-row-head, .section-cta, .pillar");
+      revealEls.forEach((el) => el.classList.add("scroll-reveal"));
+
+      let ticking = false;
+      const updateReveal = () => {
+        const vh = window.innerHeight;
+        revealEls.forEach((el) => {
+          // 0 while the element's top is below the viewport, 1 once it has risen 35% of the screen
+          const progress = Math.min(1, Math.max(0, (vh - el.getBoundingClientRect().top) / (vh * 0.35)));
+          el.style.setProperty("--reveal", progress.toFixed(3));
+        });
+        ticking = false;
+      };
+      window.addEventListener("scroll", () => {
+        if (!ticking) { ticking = true; requestAnimationFrame(updateReveal); }
+      }, { passive: true });
+      window.addEventListener("resize", updateReveal);
+      updateReveal();
+    }
+  </script>
+</body>
+</html>

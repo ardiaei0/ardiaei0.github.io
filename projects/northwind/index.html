@@ -1,0 +1,858 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Northwind — Carbon intelligence (concept)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#04090b; --panel:rgba(255,255,255,.035); --line:rgba(255,255,255,.09); --fg:#e9fbf4; --muted:#7f9a93;
+  --s1:#ff8a5b; --s2:#5bc8ff; --s3:#7dffb3; --good:#7dffb3; --bad:#ff8a5b;
+  --serif:"Space Grotesk","Helvetica Neue",Arial,sans-serif; --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"Space Mono",ui-monospace,Consolas,monospace;
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--sans);color:var(--fg);background:radial-gradient(70% 60% at 50% 45%,#0b2a27 0%,transparent 70%),var(--bg);overflow:hidden;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+em{font-style:normal} /* the display face is a grotesque, so emphasis is colour only */
+a{color:inherit;text-decoration:none}
+.mono{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+.bar{height:64px;display:flex;align-items:center;gap:22px;padding:0 24px;border-bottom:1px solid var(--line)}
+.bar .back{font-size:13px;color:var(--muted);transition:color .2s}
+.bar .back:hover{color:var(--fg)}
+.brand{font-family:var(--serif);font-size:30px;line-height:1;letter-spacing:-.01em}
+.brand em{color:var(--s3)}
+.bar .sub{color:var(--muted);font-size:14px}
+.bar .who{margin-left:auto;border:1px solid var(--s3);color:var(--s3);border-radius:99px;padding:7px 16px;font-size:13px;transition:background .25s,color .25s}
+.bar .who:hover{background:var(--s3);color:#04251a}
+.bar .tag{border:1px solid var(--line);border-radius:99px;padding:6px 14px}
+
+dialog{margin:auto;width:min(560px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;background:#081412;color:var(--fg);border:1px solid var(--line);border-radius:24px;padding:30px;box-shadow:0 40px 100px -20px rgba(0,0,0,.8)}
+dialog::backdrop{background:rgba(2,8,8,.7);backdrop-filter:blur(4px)}
+dialog[open]{animation:pop .35s var(--ease)}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.98)}}
+dialog form{position:absolute;top:16px;right:16px}
+dialog .x{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);color:var(--muted);transition:color .2s,background .2s}
+dialog .x:hover{color:var(--fg);background:rgba(255,255,255,.06)}
+dialog h2{font-family:var(--serif);font-weight:400;font-size:46px;line-height:1;margin:8px 0 14px}
+dialog h2 em{color:var(--s3)}
+dialog .lead{font-size:16px;line-height:1.55;color:var(--muted);margin-bottom:18px}
+dialog .lead b{color:var(--fg);font-weight:500}
+.roles{list-style:none;display:grid;gap:2px;margin-bottom:18px}
+.roles li{display:grid;gap:2px;padding:12px 0;border-top:1px solid var(--line)}
+.roles li b{font-weight:500;font-size:15px}
+.roles li span{font-size:14px;color:var(--muted);line-height:1.45}
+dialog .why{font-size:14px;line-height:1.55;color:var(--muted);padding:14px 16px;border-radius:14px;background:rgba(125,255,179,.07);margin-bottom:14px}
+dialog .why b{color:var(--s3);font-weight:500}
+dialog .fine{font-size:12px;line-height:1.5;color:#587670}
+
+.grid{display:grid;grid-template-columns:330px 1fr 360px;height:calc(100vh - 64px)}
+.panel{overflow-y:auto;padding:24px;scrollbar-width:thin;scrollbar-color:#244 transparent}
+.panel.left{border-right:1px solid var(--line)}
+.panel.right{border-left:1px solid var(--line)}
+.block{margin-bottom:26px}
+.block h4{margin-bottom:12px}
+
+/* left */
+.total{font-family:var(--serif);font-size:72px;line-height:.95;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin:8px 0 4px}
+.unit{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.06em}
+.delta{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:13px;padding:5px 12px;border-radius:99px;background:rgba(125,255,179,.1);color:var(--good)}
+.delta.up{background:rgba(255,138,91,.12);color:var(--bad)}
+.headline{margin-top:16px;color:var(--muted);font-size:15px;line-height:1.5}
+.headline b{color:var(--fg);font-weight:500}
+.scopes{display:grid;gap:8px}
+.scope{display:grid;grid-template-columns:14px 1fr auto;gap:12px;align-items:center;text-align:left;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--panel);transition:opacity .3s,border-color .3s}
+.scope i{width:10px;height:10px;border-radius:50%;background:var(--c);box-shadow:0 0 12px var(--c)}
+.scope b{font-weight:500;font-size:14px;display:block}
+.scope small{font-size:12px;color:var(--muted)}
+.scope span{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
+.scope.off{opacity:.4}
+.scope.off i{box-shadow:none;background:transparent;border:1.5px solid var(--c)}
+.scope:hover{border-color:rgba(255,255,255,.22)}
+.splitbar{display:flex;height:6px;border-radius:3px;overflow:hidden;margin-top:12px;background:var(--panel)}
+.splitbar i{display:block;height:100%;background:var(--c);transition:width .6s var(--ease)}
+.scen{border:1px solid var(--line);background:var(--panel);border-radius:18px;padding:18px}
+.scen .row{display:flex;justify-content:space-between;align-items:baseline}
+.scen .row b{font-family:var(--serif);font-weight:400;font-size:34px;line-height:1}
+input[type=range]{width:100%;accent-color:var(--s3);margin:14px 0 8px}
+.toggle{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);margin:6px 0 12px}
+.sw{width:38px;height:22px;border-radius:99px;background:#1b3a36;position:relative;flex:none;transition:background .3s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .3s var(--ease)}
+.sw.on{background:var(--s3)}
+.sw.on::after{transform:translateX(16px);background:#04251a}
+.saved{font-size:14px;line-height:1.5;color:var(--muted);min-height:44px}
+.saved b{color:var(--good);font-weight:500}
+
+/* stage */
+.stage{position:relative;min-width:0;overflow:hidden}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+canvas.grabbing{cursor:grabbing}
+canvas.hit{cursor:pointer}
+.tip{position:absolute;pointer-events:none;transform:translate(-50%,-130%);background:rgba(4,12,12,.92);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:13px;white-space:nowrap;opacity:0;transition:opacity .15s;z-index:3;backdrop-filter:blur(8px)}
+.tip.on{opacity:1}
+.tip b{font-weight:500;display:block}
+.tip span{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.hint{position:absolute;left:0;right:0;bottom:18px;text-align:center;pointer-events:none}
+.legend{position:absolute;left:20px;top:18px;display:grid;gap:6px;pointer-events:none}
+.legend span{display:flex;align-items:center;gap:8px}
+.legend i{width:8px;height:8px;border-radius:50%;background:var(--c)}
+.loading{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+.nogl{position:absolute;inset:0;display:none;place-items:center;text-align:center;color:var(--muted);padding:30px}
+
+/* right */
+.detail{border:1px solid var(--line);background:var(--panel);border-radius:20px;padding:20px;margin-bottom:22px;min-height:196px;transition:border-color .3s}
+.detail.has{border-color:var(--c)}
+.detail .empty{color:var(--muted);font-size:14px;line-height:1.55;display:grid;place-items:center;text-align:center;min-height:150px}
+.detail h3{font-family:var(--serif);font-weight:400;font-size:30px;line-height:1.05;margin:8px 0 4px}
+.detail .where{font-size:13px;color:var(--muted)}
+.detail .big{font-family:var(--serif);font-size:52px;line-height:1;margin:16px 0 4px;font-variant-numeric:tabular-nums}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.stats small{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.stats b{font-weight:500;font-size:15px;font-variant-numeric:tabular-nums}
+.stats .dn{color:var(--good)} .stats .upc{color:var(--bad)}
+.chip{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:99px;border:1px solid var(--c);color:var(--c)}
+.list{display:grid;gap:2px}
+.item{display:grid;grid-template-columns:12px 1fr auto;gap:12px;align-items:center;padding:11px 10px;border-radius:12px;text-align:left;transition:background .2s;position:relative}
+.item:hover,.item.hov{background:rgba(255,255,255,.05)}
+.item.sel{background:rgba(255,255,255,.08)}
+.item i{width:8px;height:8px;border-radius:50%;background:var(--c)}
+.item b{font-weight:500;font-size:14px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item small{font-size:12px;color:var(--muted)}
+.item span{font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums}
+.item .meter{grid-column:2 / 4;height:3px;border-radius:2px;background:rgba(255,255,255,.07);overflow:hidden}
+.item .meter u{display:block;height:100%;background:var(--c);transition:width .6s var(--ease);border-radius:2px}
+
+/* backend status, scenarios, forecast, data tools */
+.bar .tag.live{border-color:rgba(125,255,179,.45);color:var(--s3)}
+.bar .tag.off{border-color:rgba(255,138,91,.55);color:var(--s1)}
+.panel input:not([type=range]):not([type=file]),.panel select{width:100%;font:inherit;font-size:14px;color:var(--fg);background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:10px;padding:9px 11px;outline:none;transition:border-color .2s}
+.panel input:focus,.panel select:focus{border-color:var(--s3)}
+.panel select option{background:#0b1a18}
+.save-row{display:flex;gap:8px;margin-bottom:10px}
+.mini{padding:9px 16px;border-radius:10px;border:1px solid var(--s3);color:var(--s3);font-size:13px;white-space:nowrap;transition:background .2s,color .2s}
+.mini:hover{background:var(--s3);color:#04251a}
+.sclist{display:grid;gap:6px}
+.sc{display:grid;grid-template-columns:1fr auto;gap:6px}
+.sc-apply{text-align:left;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--panel);transition:border-color .2s}
+.sc-apply:hover{border-color:rgba(255,255,255,.25)}
+.sc-apply b{display:block;font-weight:500;font-size:14px}
+.sc-apply small{color:var(--muted);font-size:12px}
+.sc-del{width:38px;border-radius:12px;border:1px solid var(--line);color:var(--muted);transition:color .2s,border-color .2s}
+.sc-del:hover{color:var(--s1);border-color:var(--s1)}
+.panel .fine{font-size:12px;line-height:1.5;color:#587670}
+.msg{font-size:13px;line-height:1.45;min-height:18px;color:var(--muted);margin-top:8px}
+.msg.ok{color:var(--s3)}.msg.err{color:var(--s1)}
+.msg ul{margin:6px 0 0 16px}
+.by{color:var(--s3);text-transform:none;letter-spacing:0;font-family:var(--sans);font-size:11px}
+.fc svg{width:100%;height:auto;display:block}
+.fc text{font-family:var(--mono);font-size:8px;fill:var(--muted)}
+.fc text.t-good{fill:var(--s3)}
+.fc code{font-family:var(--mono);color:var(--fg)}
+.fc .sum{font-size:14px;line-height:1.5;color:var(--muted);margin-top:10px}
+.fc .sum b{color:var(--fg);font-weight:500}
+.fc .sum .good{color:var(--s3)}
+.fc .key{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:6px}
+.fc .key i{display:inline-block;width:14px;height:0;border-top:2px solid var(--c);vertical-align:middle;margin-right:6px}
+details.manage{margin-top:22px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
+.manage summary{cursor:pointer;padding:14px 16px;font-size:14px;font-weight:500;list-style:none;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.manage summary::-webkit-details-marker{display:none}
+.manage summary::after{content:"+";color:var(--muted);font-size:18px;line-height:1}
+.manage[open] summary::after{content:"–"}
+.manage summary .stat{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--muted);font-weight:400}
+fieldset.mgbody{border:0;min-width:0;padding:0 16px 16px;display:grid;gap:18px}
+fieldset.mgbody:disabled{opacity:.45}
+.form{display:grid;gap:10px}
+.form h5,.csv h5{margin-bottom:2px}
+.form label{display:grid;gap:4px;font-size:12px;color:var(--muted)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.primary{padding:11px;border-radius:12px;background:var(--s3);color:#04251a;font-weight:600;font-size:14px;transition:opacity .2s}
+.primary[disabled]{opacity:.5}
+.csv-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:8px}
+label.file{position:relative;display:inline-block;padding:9px 14px;border:1px dashed rgba(255,255,255,.25);border-radius:10px;cursor:pointer;font-size:13px;transition:border-color .2s}
+label.file:hover,label.file:focus-within{border-color:var(--s3)}
+label.file input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.linklike{font-size:13px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.linklike:hover{color:var(--fg)}
+.danger{padding:10px;border-radius:12px;border:1px solid rgba(255,138,91,.5);color:var(--s1);font-size:13px;transition:background .2s}
+.danger:hover{background:rgba(255,138,91,.12)}
+.rm{margin-top:14px;font-size:12px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.rm:hover{color:var(--fg)}.rm.confirm{color:var(--s1)}
+
+@media (max-width:1000px){
+  body{overflow:auto}
+  .bar .sub{display:none}
+  .grid{display:flex;flex-direction:column;height:auto}
+  .stage{order:-1;height:62vh;min-height:380px}
+  .panel{overflow:visible;border:0!important;border-top:1px solid var(--line)!important}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="bar">
+  <a class="back" href="../../index.html#work">← Back to portfolio</a>
+  <div class="brand">North<em>wind</em></div>
+  <div class="sub">Supply-chain carbon, made legible.</div>
+  <button class="who" id="who" aria-haspopup="dialog">Who it’s for</button>
+  <span class="mono tag" id="status" role="status">Connecting…</span>
+</header>
+
+<dialog id="whoDlg" aria-labelledby="whoTitle">
+  <form method="dialog"><button class="x" aria-label="Close">✕</button></form>
+  <span class="mono">About this concept</span>
+  <h2 id="whoTitle">Who it’s <em>for</em></h2>
+  <p class="lead">Northwind is designed first for the person who has to <b>explain</b> the footprint, not only the person who collects the data.</p>
+  <ul class="roles">
+    <li><b>CFO &amp; finance lead</b><span>A number they can defend, and a sense of what a cut is worth.</span></li>
+    <li><b>Sustainability / ESG manager</b><span>Where to focus, and a clear way to show progress.</span></li>
+    <li><b>Procurement &amp; supply chain</b><span>Which suppliers drive emissions, so they know whom to push.</span></li>
+    <li><b>Executives &amp; board</b><span>The headline in ten seconds, with no spreadsheet.</span></li>
+    <li><b>Consultants &amp; auditors</b><span>A view they can walk a client through.</span></li>
+  </ul>
+  <p class="why"><b>Why now:</b> reporting rules such as the EU’s CSRD are pushing companies to measure supply-chain (Scope 3) emissions, and large customers increasingly ask their suppliers for the numbers.</p>
+  <p class="fine">A design concept with invented sample data. Carbon accounting is an established category with real products; this explores a clearer, more visual way to communicate the result.</p>
+</dialog>
+
+<div class="grid">
+  <aside class="panel left">
+    <div class="block">
+      <div class="mono">Total footprint</div>
+      <div class="total" id="total">0</div>
+      <div class="unit">tCO₂e per year</div>
+      <div id="delta" class="delta"></div>
+      <p class="headline" id="headline"></p>
+    </div>
+    <div class="block">
+      <h4 class="mono">Scopes · tap to filter</h4>
+      <div class="scopes" id="scopes"></div>
+      <div class="splitbar" id="split"></div>
+    </div>
+    <div class="block">
+      <h4 class="mono">What if…</h4>
+      <div class="scen">
+        <div class="row"><span style="font-size:14px">We cut emissions by</span><b id="redv">0%</b></div>
+        <input type="range" id="red" min="0" max="60" step="1" value="0" aria-label="Reduction percentage">
+        <button class="toggle" id="top3"><span class="sw"></span><span>Only the top 3 emitters</span></button>
+        <p class="saved" id="saved"></p>
+      </div>
+    </div>
+    <div class="block">
+      <h4 class="mono">Saved scenarios</h4>
+      <div class="save-row"><input id="scName" type="text" maxlength="40" placeholder="Name this scenario" aria-label="Scenario name" autocomplete="off"><button type="button" class="mini" id="scSave">Save</button></div>
+      <div class="sclist" id="scList"></div>
+      <p class="msg" id="scMsg" role="status"></p>
+    </div>
+    <div class="block">
+      <h4 class="mono">Forecast to 2035 <span class="by">· calculated by Python</span></h4>
+      <div class="fc" id="fc"><p class="fine">Loading forecast…</p></div>
+    </div>
+  </aside>
+
+  <section class="stage" id="stage">
+    <canvas id="gl"></canvas>
+    <div class="tip" id="tip"></div>
+    <div class="legend mono"><span style="--c:var(--s1)"><i></i>Scope 1 · direct</span><span style="--c:var(--s2)"><i></i>Scope 2 · energy</span><span style="--c:var(--s3)"><i></i>Scope 3 · supply chain</span></div>
+    <div class="hint mono">Drag to rotate · scroll to zoom · click a column</div>
+    <div class="loading mono" id="loading">Loading the globe…</div>
+    <div class="nogl" id="nogl">The 3D view couldn’t load (it needs WebGL and an internet connection for the Three.js library). The dashboard still works.</div>
+  </section>
+
+  <aside class="panel right">
+    <div class="detail" id="detail"></div>
+    <h4 class="mono" style="margin-bottom:8px;padding-left:10px">Sources, largest first</h4>
+    <div class="list" id="list"></div>
+
+    <details class="manage" id="manage">
+      <summary>Manage data <span class="stat" id="dbStat"></span></summary>
+      <fieldset class="mgbody" id="mgFields">
+        <p class="fine" id="mgNote">Saved to a SQL database by the Node.js server. A Python service checks every imported row.</p>
+        <form id="addForm" class="form" autocomplete="off">
+          <h5 class="mono">Add a supplier</h5>
+          <label>Name<input name="name" required minlength="2" maxlength="80"></label>
+          <label>Country<input name="country" required minlength="2" maxlength="60"></label>
+          <div class="two">
+            <label>Latitude<input name="lat" type="number" step="any" min="-90" max="90" required></label>
+            <label>Longitude<input name="lon" type="number" step="any" min="-180" max="180" required></label>
+          </div>
+          <div class="two">
+            <label>Scope<select name="scope"><option value="3">3 · Supply chain</option><option value="2">2 · Energy</option><option value="1">1 · Direct</option></select></label>
+            <label>Category<input name="category" required minlength="2" maxlength="40"></label>
+          </div>
+          <div class="two">
+            <label>Emissions (tCO₂e)<input name="emissions" type="number" step="any" min="0" required></label>
+            <label>Trend (% vs last year)<input name="trend" type="number" step="any" min="-50" max="100" value="0"></label>
+          </div>
+          <button class="primary" type="submit">Add supplier</button>
+          <p class="msg" id="addMsg" role="status"></p>
+        </form>
+        <div class="csv">
+          <h5 class="mono">Import a CSV</h5>
+          <p class="fine">Columns: name, country, lat, lon, scope, category, emissions, trend. Existing names are updated.</p>
+          <div class="csv-row">
+            <label class="file">Choose a file<input type="file" id="csvFile" accept=".csv,text/csv"></label>
+            <button type="button" class="linklike" id="csvTemplate">Download template</button>
+          </div>
+          <p class="msg" id="csvMsg" role="status"></p>
+        </div>
+        <button type="button" class="danger" id="resetBtn">Reset demo data</button>
+      </fieldset>
+    </details>
+  </aside>
+</div>
+
+<script>
+/* load Three.js, trying a second and third host if the first is blocked or slow */
+window.__threeReady = new Promise((done) => {
+  const urls = ['https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js', 'https://unpkg.com/three@0.128.0/build/three.min.js'];
+  let i = 0;
+  const next = () => {
+    if (window.THREE) return done(true);
+    if (i >= urls.length) return done(false);
+    const s = document.createElement('script'); s.src = urls[i++];
+    s.onload = () => (window.THREE ? done(true) : next()); s.onerror = next;
+    document.head.appendChild(s);
+  };
+  next();
+});
+</script>
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const fmt = (n) => Math.round(n).toLocaleString('en-US');
+const SC = { 1: ['Scope 1', 'Direct operations', '#ff8a5b'], 2: ['Scope 2', 'Purchased energy', '#5bc8ff'], 3: ['Scope 3', 'Supply chain', '#7dffb3'] };
+const HQ = { lat: 38.72, lon: -9.14 };
+
+/* The data lives in a SQL database behind the Node API (see /backend). This built-in copy is only a fallback,
+   used when the page is opened without the backend running (for example on a static host). */
+const FALLBACK = [
+  ['Shenzhen Circuits Ltd', 'China', 22.54, 114.06, 3, 'Electronics', 18400, 4],
+  ['Monterrey Steelworks', 'Mexico', 25.69, -100.32, 3, 'Steel', 12100, 2],
+  ['Rotterdam Freight Group', 'Netherlands', 51.92, 4.48, 3, 'Logistics', 9200, -6],
+  ['Ho Chi Minh Plastics', 'Vietnam', 10.82, 106.63, 3, 'Plastics', 8600, 7],
+  ['Chennai Textiles', 'India', 13.08, 80.27, 3, 'Textiles', 7800, -1],
+  ['Gdańsk Chemicals', 'Poland', 54.35, 18.65, 3, 'Chemicals', 6900, -8],
+  ['Porto Assembly Plant', 'Portugal', 41.15, -8.61, 1, 'Own operations', 6300, -3],
+  ['São Paulo Aluminium', 'Brazil', -23.55, -46.63, 3, 'Aluminium', 5500, -4],
+  ['Chicago Cloud & Data', 'United States', 41.88, -87.63, 2, 'Cloud hosting', 4700, -15],
+  ['Istanbul Packaging', 'Türkiye', 41.01, 28.98, 3, 'Packaging', 3900, -9],
+  ['Johor Rubber Works', 'Malaysia', 1.49, 103.74, 3, 'Rubber', 3300, 1],
+  ['Lagos Cocoa Co-op', 'Nigeria', 6.52, 3.38, 3, 'Agriculture', 2100, -2],
+  ['Lisbon HQ & offices', 'Portugal', 38.72, -9.14, 2, 'Offices', 1250, -12],
+].map((r, i) => ({ id: i + 1, name: r[0], country: r[1], lat: r[2], lon: r[3], scope: r[4], category: r[5], emissions: r[6], trend: r[7] }));
+
+const API = '/api/northwind';
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const scopeOn = { 1: true, 2: true, 3: true }; // which scopes are switched on; survives data reloads
+let DATA = [], MAXE = 1, TOP3 = new Set();
+
+/* state */
+const S = { red: 0, top3only: false, sel: -1, hov: -1 };
+
+/** Load a list of suppliers (from the API or the fallback) into the dashboard and the globe. */
+function setData(rows) {
+  const keepId = S.sel >= 0 && DATA[S.sel] ? DATA[S.sel].id : null; // keep the same supplier selected
+  DATA = rows.map((s, i) => ({ id: s.id, name: s.name, country: s.country, lat: s.lat, lon: s.lon, scope: s.scope, e: s.emissions, trend: s.trend, cat: s.category, i, on: scopeOn[s.scope] }));
+  MAXE = Math.max(1, ...DATA.map((d) => d.e));
+  TOP3 = new Set([...DATA].sort((a, b) => b.e - a.e).slice(0, 3).map((d) => d.i));
+  S.sel = keepId == null ? -1 : DATA.findIndex((d) => d.id === keepId);
+  S.hov = -1;
+  if (gl) gl.rebuild();
+  ui();
+  forecastSoon();
+}
+const eff = (d) => d.e * (1 - ((S.top3only ? TOP3.has(d.i) : true) ? S.red / 100 : 0));
+const visible = () => DATA.filter(d => d.on);
+const sum = (arr, f) => arr.reduce((a, d) => a + f(d), 0);
+
+/* distance to HQ in km */
+const toRad = (x) => x * Math.PI / 180;
+const km = (d) => {
+  const a = Math.sin(toRad(d.lat - HQ.lat) / 2) ** 2 + Math.cos(toRad(HQ.lat)) * Math.cos(toRad(d.lat)) * Math.sin(toRad(d.lon - HQ.lon) / 2) ** 2;
+  return 2 * 6371 * Math.asin(Math.sqrt(a));
+};
+
+/* ---------- dashboard UI ---------- */
+let shownTotal = 0, tween = null;
+function animateTotal(to) {
+  cancelAnimationFrame(tween);
+  const from = shownTotal, t0 = performance.now();
+  const step = (t) => {
+    const p = Math.min((t - t0) / 600, 1), e = 1 - Math.pow(1 - p, 3);
+    shownTotal = from + (to - from) * e; $('#total').textContent = fmt(shownTotal);
+    if (p < 1) tween = requestAnimationFrame(step);
+  };
+  tween = requestAnimationFrame(step);
+}
+
+function ui() {
+  const vis = visible();
+  const total = sum(vis, eff);
+  const base = sum(vis, d => d.e);
+  animateTotal(total);
+
+  // YoY (on baseline data)
+  const prev = sum(vis, d => d.e / (1 + d.trend / 100));
+  const yoy = base && prev ? (base - prev) / prev * 100 : 0;
+  const dl = $('#delta'); dl.className = 'delta' + (yoy > 0 ? ' up' : '');
+  dl.textContent = `${yoy <= 0 ? '▼' : '▲'} ${Math.abs(yoy).toFixed(1)}% vs last year`;
+
+  // headline sentence
+  const top = [...vis].sort((a, b) => eff(b) - eff(a))[0];
+  const top3share = base ? sum(vis.filter(d => TOP3.has(d.i)), d => d.e) / base * 100 : 0;
+  $('#headline').innerHTML = top
+    ? `<b>${esc(top.name)}</b> is your biggest source — <b>${(eff(top) / total * 100).toFixed(0)}%</b> of everything. Your top three suppliers make up <b>${top3share.toFixed(0)}%</b>.`
+    : (DATA.length ? 'Turn a scope back on to see your footprint.' : 'Loading your footprint…');
+
+  // scopes
+  $('#scopes').innerHTML = [1, 2, 3].map(k => {
+    const items = DATA.filter(d => d.scope === k), v = sum(items, eff), on = items.every(d => d.on);
+    return `<button class="scope ${on ? '' : 'off'}" data-scope="${k}" style="--c:${SC[k][2]}"><i></i><div><b>${SC[k][0]}</b><small>${SC[k][1]}</small></div><span>${fmt(v)}</span></button>`;
+  }).join('');
+  const allT = sum(DATA, eff) || 1;
+  $('#split').innerHTML = [1, 2, 3].map(k => `<i style="--c:${SC[k][2]};width:${sum(DATA.filter(d => d.scope === k && d.on), eff) / allT * 100}%"></i>`).join('');
+
+  // scenario text
+  const saved = base - total;
+  $('#redv').textContent = S.red + '%';
+  $('#saved').innerHTML = S.red === 0
+    ? 'Drag the slider to see what a cut would be worth.'
+    : `Saves <b>${fmt(saved)} tCO₂e</b> a year — roughly <b>${fmt(saved / 4.6)}</b> passenger cars off the road.`;
+  $('#top3').firstElementChild.classList.toggle('on', S.top3only);
+
+  // right: detail + list
+  const sorted = [...vis].sort((a, b) => eff(b) - eff(a));
+  $('#list').innerHTML = sorted.map(d => `<button class="item ${S.sel === d.i ? 'sel' : ''}" data-i="${d.i}" style="--c:${SC[d.scope][2]}"><i></i><div><b>${esc(d.name)}</b><small>${esc(d.country)} · ${esc(d.cat)}</small></div><span>${fmt(eff(d))}</span><div class="meter"><u style="width:${eff(d) / MAXE * 100}%"></u></div></button>`).join('');
+  renderDetail(total);
+}
+
+function renderDetail(total) {
+  const el = $('#detail'), d = DATA[S.sel];
+  if (!d || !d.on) {
+    el.className = 'detail'; el.style.removeProperty('--c');
+    el.innerHTML = '<div class="empty">Select a column on the globe,<br>or pick a source below, to see where<br>the carbon comes from.</div>'; return;
+  }
+  const t = total || sum(visible(), eff);
+  el.className = 'detail has'; el.style.setProperty('--c', SC[d.scope][2]);
+  el.innerHTML = `<span class="chip" style="--c:${SC[d.scope][2]}">${SC[d.scope][0]}</span>
+    <h3>${esc(d.name)}</h3><div class="where">${esc(d.country)} · ${esc(d.cat)}</div>
+    <div class="big">${fmt(eff(d))}<span class="unit"> tCO₂e</span></div>
+    <div class="stats"><div><small>Share</small><b>${(eff(d) / t * 100).toFixed(1)}%</b></div>
+    <div><small>vs last yr</small><b class="${d.trend <= 0 ? 'dn' : 'upc'}">${d.trend <= 0 ? '▼' : '▲'} ${Math.abs(d.trend)}%</b></div>
+    <div><small>To Lisbon</small><b>${fmt(km(d))} km</b></div></div>
+    ${backend ? `<button class="rm" data-del="${d.id}">Remove supplier</button>` : ''}`;
+}
+
+/* ---------- 3D ---------- */
+let gl = null;
+const loadScript = (src) => new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); });
+
+/* continents: fetch Natural Earth land outlines at runtime and rasterise them into a lookup mask */
+async function loadLand() {
+  try {
+    await loadScript('https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js');
+    const topo = await (await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/land-110m.json')).json();
+    const land = topojson.feature(topo, topo.objects.land);
+    const geoms = land.type === 'FeatureCollection' ? land.features.map((f) => f.geometry) : [land.geometry || land];
+    const W = 1440, H = 720, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    const ctx = cv.getContext('2d'); ctx.fillStyle = '#fff'; ctx.beginPath();
+    const ring = (r) => r.forEach((p, i) => { const x = (p[0] + 180) / 360 * W, y = (90 - p[1]) / 180 * H; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+    geoms.forEach((g) => { (g.type === 'Polygon' ? [g.coordinates] : g.coordinates).forEach((poly) => poly.forEach((r) => { ring(r); ctx.closePath(); })); });
+    ctx.fill('evenodd');
+    const data = ctx.getImageData(0, 0, W, H).data;
+    return (lat, lon) => {
+      const x = Math.min(W - 1, Math.max(0, Math.floor((lon + 180) / 360 * W))), y = Math.min(H - 1, Math.max(0, Math.floor((90 - lat) / 180 * H)));
+      return data[(y * W + x) * 4 + 3] > 127;
+    };
+  } catch (e) { return null; }
+}
+
+function initGL() {
+  if (typeof THREE === 'undefined') { $('#nogl').style.display = 'grid'; return; }
+  const canvas = $('#gl'), stage = $('#stage');
+  let renderer;
+  try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true }); }
+  catch (e) { $('#nogl').style.display = 'grid'; return; }
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  const scene = new THREE.Scene();
+  const cam = new THREE.PerspectiveCamera(40, 1, .1, 60); cam.position.z = 6.2;
+  const R = 1.5, globe = new THREE.Group(); scene.add(globe);
+  const ll = (lat, lon, r = R) => new THREE.Vector3(r * Math.cos(toRad(lat)) * Math.sin(toRad(lon)), r * Math.sin(toRad(lat)), r * Math.cos(toRad(lat)) * Math.cos(toRad(lon)));
+
+  // the planet: a visibly teal sphere, a soft glowing rim, and a dot grid (bright on land, faint on sea)
+  const occ = new THREE.Mesh(new THREE.SphereGeometry(R * .996, 64, 64), new THREE.MeshBasicMaterial({ color: 0x0a2e2b }));
+  globe.add(occ);
+  scene.add(new THREE.Mesh(new THREE.SphereGeometry(R * 1.08, 48, 48), new THREE.MeshBasicMaterial({ color: 0x2dd4aa, transparent: true, opacity: .1, side: THREE.BackSide })));
+  scene.add(new THREE.Mesh(new THREE.SphereGeometry(R * 1.2, 48, 48), new THREE.MeshBasicMaterial({ color: 0x2dd4aa, transparent: true, opacity: .05, side: THREE.BackSide })));
+  let dots = [];
+  const dotGeo = (n, keep) => { // evenly spread points on a sphere; keep(lat, lon) picks which ones to use
+    const pos = [];
+    for (let i = 0; i < n; i++) {
+      const y = 1 - (i / (n - 1)) * 2, rad = Math.sqrt(1 - y * y), th = Math.PI * (3 - Math.sqrt(5)) * i;
+      const x = Math.cos(th) * rad, z = Math.sin(th) * rad;
+      if (keep(Math.asin(y) * 180 / Math.PI, Math.atan2(x, z) * 180 / Math.PI)) pos.push(x * R * 1.003, y * R * 1.003, z * R * 1.003);
+    }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); return g;
+  };
+  const addPoints = (g, size, color, opacity) => { const p = new THREE.Points(g, new THREE.PointsMaterial({ size, color, transparent: true, opacity })); globe.add(p); dots.push(p); };
+  const clearDots = () => { dots.forEach((d) => { globe.remove(d); d.geometry.dispose(); d.material.dispose(); }); dots = []; };
+  addPoints(dotGeo(5200, () => true), .02, 0x4fae98, .95); // plain grid first, so the globe never depends on the network
+  loadLand().then((mask) => { // real continents replace it once the map outlines arrive
+    if (!mask) return;
+    clearDots();
+    addPoints(dotGeo(16000, (la, lo) => !mask(la, lo)), .011, 0x1f5a50, .8);
+    addPoints(dotGeo(16000, (la, lo) => mask(la, lo)), .021, 0x7dffd0, 1);
+  });
+
+  // nodes
+  const boxGeo = new THREE.BoxGeometry(1, 1, 1); boxGeo.translate(0, .5, 0);
+  const tipGeo = new THREE.SphereGeometry(1, 12, 12), up = new THREE.Vector3(0, 1, 0);
+  const hq = ll(HQ.lat, HQ.lon).normalize();
+  let nodes = [];
+  const makeNode = (d) => {
+    const n = ll(d.lat, d.lon).normalize(), col = new THREE.Color(SC[d.scope][2]);
+    const mat = new THREE.MeshBasicMaterial({ color: col.clone() });
+    const mesh = new THREE.Mesh(boxGeo, mat); mesh.position.copy(n).multiplyScalar(R); mesh.quaternion.setFromUnitVectors(up, n);
+    mesh.scale.set(.05, .001, .05); mesh.userData.i = d.i; globe.add(mesh);
+    // oversized invisible box so columns are easy to hover and click
+    const hit = new THREE.Mesh(boxGeo, new THREE.MeshBasicMaterial({ visible: false }));
+    hit.position.copy(mesh.position); hit.quaternion.copy(mesh.quaternion); hit.userData.i = d.i; globe.add(hit);
+    const tip = new THREE.Mesh(tipGeo, new THREE.MeshBasicMaterial({ color: col.clone(), transparent: true, opacity: .95 })); tip.scale.setScalar(.034); globe.add(tip);
+    const ring = new THREE.Mesh(new THREE.RingGeometry(.05, .058, 40), new THREE.MeshBasicMaterial({ color: col.clone(), transparent: true, opacity: 0, side: THREE.DoubleSide }));
+    ring.position.copy(n).multiplyScalar(R * 1.004); ring.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), n); globe.add(ring);
+
+    // arc to HQ with a travelling particle
+    let arc = null, part = null; const ang = n.angleTo(hq);
+    if (ang > .02) {
+      const s = Math.sin(ang), lift = .1 + ang * .3, pts = [];
+      for (let k = 0; k <= 72; k++) {
+        const t = k / 72, p = n.clone().multiplyScalar(Math.sin((1 - t) * ang) / s).add(hq.clone().multiplyScalar(Math.sin(t * ang) / s)).normalize().multiplyScalar(R + Math.sin(Math.PI * t) * lift);
+        pts.push(p);
+      }
+      arc = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: col.clone(), transparent: true, opacity: .28 }));
+      arc.userData.pts = pts; globe.add(arc);
+      part = new THREE.Mesh(tipGeo, new THREE.MeshBasicMaterial({ color: col.clone() })); part.scale.setScalar(.022); globe.add(part);
+    }
+    return { d, n, col, mat, mesh, hit, tip, ring, arc, part, cur: 0, t: Math.random() };
+  };
+  // columns can be rebuilt at any time, because suppliers are added, imported and removed while the page is open
+  const disposeNode = (n) => [n.mesh, n.hit, n.tip, n.ring, n.arc, n.part].forEach((o) => {
+    if (!o) return;
+    globe.remove(o);
+    if (o.material) o.material.dispose();
+    if (o.geometry && o.geometry !== boxGeo && o.geometry !== tipGeo) o.geometry.dispose();
+  });
+  const buildNodes = () => { nodes.forEach(disposeNode); nodes = DATA.map(makeNode); };
+  buildNodes();
+  const hqRing = new THREE.Mesh(new THREE.RingGeometry(.07, .08, 48), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: .8, side: THREE.DoubleSide }));
+  hqRing.position.copy(hq).multiplyScalar(R * 1.006); hqRing.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), hq); globe.add(hqRing);
+
+  // interaction
+  const cur = { x: .5, y: .5 }, tgt = { x: .5, y: .5 }; let camZ = 6.2, baseZ = 6.2, idle = 0;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), tip = $('#tip');
+  const pickables = () => [occ, ...nodes.filter(n => n.d.on && n.cur > .02).map(n => n.hit)];
+  let inside = false;
+  canvas.addEventListener('pointerenter', () => { inside = true; });
+  function cast(e) {
+    const r = canvas.getBoundingClientRect(); ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(ndc, cam); const hit = ray.intersectObjects(pickables(), false)[0];
+    return hit && hit.object !== occ ? hit.object.userData.i : -1;
+  }
+  let drag = null, moved = 0;
+  canvas.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, y: e.clientY }; moved = 0; idle = 0; canvas.setPointerCapture(e.pointerId); canvas.classList.add('grabbing'); });
+  canvas.addEventListener('pointermove', (e) => {
+    idle = 0;
+    if (drag) {
+      const dx = e.clientX - drag.x, dy = e.clientY - drag.y; moved += Math.abs(dx) + Math.abs(dy);
+      tgt.y += dx * .006; tgt.x = clamp(tgt.x + dy * .006, -1.3, 1.3); drag.x = e.clientX; drag.y = e.clientY; setHover(-1);
+    } else setHover(cast(e));
+  });
+  canvas.addEventListener('pointerup', (e) => { if (drag && moved < 6) { const i = cast(e); if (i >= 0) select(i === S.sel ? -1 : i); } drag = null; canvas.classList.remove('grabbing'); });
+  canvas.addEventListener('pointerleave', () => { inside = false; if (!drag) setHover(-1); });
+  canvas.addEventListener('wheel', (e) => { e.preventDefault(); camZ = clamp(camZ + e.deltaY * .004 * baseZ / 6, baseZ * .55, baseZ * 1.25); idle = 0; }, { passive: false });
+
+  function setHover(i) {
+    if (i === S.hov) return;
+    S.hov = i; canvas.classList.toggle('hit', i >= 0);
+    document.querySelectorAll('.item.hov').forEach(el => el.classList.remove('hov'));
+    if (i >= 0) { const el = $(`.item[data-i="${i}"]`); if (el) el.classList.add('hov'); }
+    if (i < 0) tip.classList.remove('on');
+  }
+  function focus(i) { const d = DATA[i]; tgt.y = -toRad(d.lon); tgt.x = clamp(toRad(d.lat), -1.2, 1.2); camZ = Math.min(camZ, baseZ * .85); }
+
+  // keep the whole globe (plus its columns) in frame whatever shape the stage is
+  const resize = () => {
+    const w = stage.clientWidth, h = stage.clientHeight; if (!w || !h) return;
+    renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix();
+    const t = Math.tan(toRad(cam.fov) / 2), need = 2.05;
+    baseZ = Math.max(need / t, need / (t * cam.aspect)) * 1.02;
+    camZ = baseZ;
+  };
+  new ResizeObserver(resize).observe(stage); resize();
+
+  const tmp = new THREE.Vector3(), white = new THREE.Color(0xffffff);
+  const targetH = (n) => n.d.on ? .05 + (eff(n.d) / MAXE) * .8 : 0;
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min((now - last) / 16.7, 3); last = now; idle += dt;
+    if (idle > 180 && S.sel < 0 && !drag && !inside && S.hov < 0) tgt.y += .0018 * dt;
+    let dy = tgt.y - cur.y; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+    cur.y += dy * .1 * dt; cur.x += (tgt.x - cur.x) * .1 * dt;
+    globe.rotation.set(cur.x, cur.y, 0);
+    cam.position.z += (camZ - cam.position.z) * .08;
+
+    nodes.forEach((n) => {
+      n.cur += (targetH(n) - n.cur) * .1 * dt;
+      const h = Math.max(n.cur, .001), active = S.sel === n.d.i || S.hov === n.d.i;
+      const w = active ? .075 : .05;
+      n.mesh.scale.set(w, h, w); n.mesh.visible = n.cur > .006;
+      n.hit.scale.set(.17, Math.max(h, .1) + .06, .17);
+      n.tip.position.copy(n.n).multiplyScalar(R + h); n.tip.visible = n.mesh.visible; n.tip.scale.setScalar(active ? .055 : .034);
+      n.mat.color.copy(n.col).lerp(white, active ? .55 : 0);
+      n.ring.visible = n.d.on && S.sel === n.d.i; if (n.ring.visible) { const p = (now % 1400) / 1400; n.ring.scale.setScalar(1 + p * 2.4); n.ring.material.opacity = .8 * (1 - p); }
+      if (n.arc) {
+        n.arc.visible = n.d.on; n.part.visible = n.d.on;
+        n.arc.material.opacity = active ? .75 : .26;
+        if (n.d.on) { n.t = (n.t + .0035 * dt) % 1; const pts = n.arc.userData.pts, k = n.t * (pts.length - 1), a = pts[Math.floor(k)], b = pts[Math.min(Math.floor(k) + 1, pts.length - 1)]; n.part.position.lerpVectors(a, b, k % 1); }
+      }
+    });
+    hqRing.scale.setScalar(1 + .12 * Math.sin(now / 400));
+
+    // tooltip follows hovered/selected tip
+    const ti = S.hov >= 0 ? S.hov : -1;
+    if (ti >= 0 && nodes[ti] && !drag) {
+      const n = nodes[ti]; n.tip.getWorldPosition(tmp);
+      const facing = tmp.dot(cam.position) > R * R; // false when the column is on the far side of the globe
+      tmp.project(cam);
+      tip.style.left = (tmp.x * .5 + .5) * stage.clientWidth + 'px'; tip.style.top = (-tmp.y * .5 + .5) * stage.clientHeight + 'px';
+      tip.innerHTML = `<b>${esc(n.d.name)}</b><span>${fmt(eff(n.d))} tCO₂e · ${SC[n.d.scope][0]}</span>`; tip.classList.toggle('on', facing);
+    }
+    renderer.render(scene, cam);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  // viewport position of a column's midpoint (handy for testing clicks)
+  const screenOf = (i) => {
+    const n = nodes[i]; tmp.copy(n.n).multiplyScalar(R + n.cur / 2); globe.localToWorld(tmp); tmp.project(cam);
+    const r = canvas.getBoundingClientRect(); return [r.left + (tmp.x * .5 + .5) * r.width, r.top + (-tmp.y * .5 + .5) * r.height];
+  };
+  gl = { focus, setHover, screenOf, rebuild: buildNodes };
+  $('#loading').style.display = 'none';
+}
+
+function select(i) {
+  S.sel = i;
+  if (i >= 0 && gl) gl.focus(i);
+  ui();
+}
+
+/* ---------- backend: API, forecast, scenarios, data tools ---------- */
+let backend = false;
+
+/** Call the Node API. Throws an Error whose message is safe to show; `fields` holds per-field problems. */
+async function api(path, opts = {}) {
+  const init = { method: opts.method || 'GET', headers: {} };
+  if (opts.json !== undefined) { init.headers['Content-Type'] = 'application/json'; init.body = JSON.stringify(opts.json); }
+  if (opts.csv !== undefined) { init.headers['Content-Type'] = 'text/csv'; init.body = opts.csv; }
+  let r;
+  try { r = await fetch(API + path, init); } catch (e) { throw new Error('Could not reach the server'); }
+  let data = null;
+  try { data = await r.json(); } catch (e) { /* not JSON: probably a static host answering 404 */ }
+  if (!r.ok) { const err = new Error((data && data.error) || `Request failed (${r.status})`); err.fields = data && data.fields; err.status = r.status; throw err; }
+  return data;
+}
+const describe = (err) => (err.fields ? Object.values(err.fields).join('. ') : err.message);
+const setMsg = (el, text, kind) => { el.textContent = text; el.className = 'msg' + (kind ? ' ' + kind : ''); };
+const STATUS_OK = 'Live · Node + SQL + Python';
+const STATUS_TIP = 'Data comes from a SQL database through a Node.js API; a Python service validates CSV files and calculates the forecast.';
+function setStatus(kind, text, title) { const el = $('#status'); el.className = 'mono tag ' + kind; el.textContent = text; el.title = title || ''; }
+
+async function refreshDbStat() {
+  try { const s = await api('/summary'); $('#dbStat').textContent = `${s.suppliers} suppliers · ${fmt(s.total)} t`; } catch (e) { $('#dbStat').textContent = ''; }
+}
+async function reloadSuppliers() { const r = await api('/suppliers'); setData(r.suppliers); refreshDbStat(); }
+
+/* forecast: Node asks the Python service, which projects emissions to 2035 */
+let fcTimer = 0, fcSeq = 0;
+function forecastSoon() { clearTimeout(fcTimer); fcTimer = setTimeout(loadForecast, 250); }
+async function loadForecast() {
+  const box = $('#fc');
+  if (!backend) { box.innerHTML = '<p class="fine">The forecast is calculated by the Python service, which needs the backend. Start it with <code>node serve.js</code>.</p>'; return; }
+  if (!DATA.length) { box.innerHTML = '<p class="fine">Add a supplier to see a forecast.</p>'; return; }
+  const seq = ++fcSeq; // ignore answers that arrive after a newer request
+  try {
+    const f = await api(`/forecast?reduction=${S.red}&top3=${S.top3only ? 1 : 0}`);
+    if (seq === fcSeq) { drawForecast(f); if ($('#status').textContent !== STATUS_OK) setStatus('live', STATUS_OK, STATUS_TIP); } // Python is back
+  } catch (e) {
+    if (seq !== fcSeq) return;
+    box.innerHTML = `<p class="fine">${esc(e.status === 503 ? 'The Python analytics service is offline right now, so there is no forecast. It restarts automatically.' : describe(e))}</p>`;
+    if (e.status === 503) setStatus('live', 'Live · Python offline', 'Node and SQL are running; the Python service is not responding.');
+  }
+}
+function drawForecast(f) {
+  const W = 300, H = 150, L = 6, R = 38, T = 12, B = 22, n = f.years.length;
+  const maxY = Math.max(...f.baseline, ...f.scenario) * 1.08 || 1;
+  const x = (i) => L + (i / (n - 1)) * (W - L - R), y = (v) => T + (1 - v / maxY) * (H - T - B);
+  const line = (arr) => arr.map((v, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1)).join(' ');
+  const band = line(f.baseline) + ' ' + f.scenario.map((_, i) => { const j = n - 1 - i; return 'L' + x(j).toFixed(1) + ' ' + y(f.scenario[j]).toFixed(1); }).join(' ') + ' Z';
+  const k = (v) => (v / 1000).toFixed(v >= 100000 ? 0 : 1).replace(/\.0$/, '') + 'k';
+  const ti = f.years.indexOf(f.target_year), eb = y(f.baseline[n - 1]), es = y(f.scenario[n - 1]);
+  const nudge = Math.abs(eb - es) < 11 ? (11 - Math.abs(eb - es)) / 2 : 0; // keep the two end labels from overlapping
+  const pct = (v) => (v > 0 ? '+' : '') + v.toFixed(1) + '%';
+  $('#fc').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Forecast of total emissions from ${f.years[0]} to ${f.years[n - 1]}: ${fmt(f.baseline[ti])} tonnes in ${f.target_year} with no action, ${fmt(f.scenario[ti])} with the selected cuts.">
+    <line x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}" stroke="rgba(255,255,255,.14)"/>
+    <line x1="${x(ti).toFixed(1)}" x2="${x(ti).toFixed(1)}" y1="${T}" y2="${H - B}" stroke="rgba(255,255,255,.18)" stroke-dasharray="2 3"/>
+    <path d="${band}" fill="rgba(125,255,179,.14)"/>
+    <path d="${line(f.baseline)}" fill="none" stroke="#7f9a93" stroke-width="1.6" stroke-dasharray="4 3"/>
+    <path d="${line(f.scenario)}" fill="none" stroke="#7dffb3" stroke-width="2.2" stroke-linejoin="round"/>
+    <text x="${L}" y="${H - 7}">${f.years[0]}</text><text x="${x(ti).toFixed(1)}" y="${H - 7}" text-anchor="middle">${f.target_year}</text><text x="${W - R}" y="${H - 7}" text-anchor="end">${f.years[n - 1]}</text>
+    <text x="${W - R + 5}" y="${(eb + 3 - (eb <= es ? nudge : -nudge)).toFixed(1)}">${k(f.baseline[n - 1])}</text>
+    <text class="t-good" x="${W - R + 5}" y="${(es + 3 + (eb <= es ? nudge : -nudge)).toFixed(1)}">${k(f.scenario[n - 1])}</text>
+  </svg>
+  <div class="key"><span><i style="--c:#7f9a93;border-top-style:dashed"></i>No action</span><span><i style="--c:#7dffb3"></i>With your cuts</span></div>
+  <p class="sum">By <b>${f.target_year}</b>, with no action, the footprint is <b>${fmt(f.baseline_target)}</b> tCO₂e (${pct(f.baseline_change_pct)} vs today).${f.reduction
+    ? ` With cuts ramping up to ${f.reduction}% by ${f.target_year}${f.top3_only ? ' at the top 3 emitters' : ''}, it is <span class="good"><b>${fmt(f.scenario_target)}</b></span>, which is <b>${fmt(f.saved_at_target)}</b> lower. Over ${f.years[0]}–${f.years[n - 1]} that avoids about <b>${fmt(f.saved_cumulative)}</b> tCO₂e.`
+    : ' Move the slider to see what a cut would change.'} Covers all scopes.</p>`;
+}
+
+/* saved scenarios live in the database */
+async function loadScenarios() {
+  if (!backend) return;
+  try { renderScenarios((await api('/scenarios')).scenarios); } catch (e) { setMsg($('#scMsg'), describe(e), 'err'); }
+}
+function renderScenarios(list) {
+  $('#scList').innerHTML = list.length
+    ? list.map((s) => `<div class="sc"><button type="button" class="sc-apply" data-sc="${s.id}" data-red="${s.reduction}" data-top3="${s.top3_only ? 1 : 0}"><b>${esc(s.name)}</b><small>${s.reduction}% cut · ${s.top3_only ? 'top 3 emitters' : 'all suppliers'}</small></button><button type="button" class="sc-del" data-scdel="${s.id}" aria-label="Delete scenario ${esc(s.name)}">✕</button></div>`).join('')
+    : '<p class="fine">Nothing saved yet. Set a cut above, name it and save.</p>';
+}
+function applyScenario(red, top3) { S.red = red; S.top3only = top3; $('#red').value = red; ui(); forecastSoon(); }
+
+async function removeSupplier(id) {
+  try { await api('/suppliers/' + id, { method: 'DELETE' }); S.sel = -1; await reloadSuppliers(); }
+  catch (e) { $('#manage').open = true; setMsg($('#addMsg'), describe(e), 'err'); }
+}
+
+async function boot() {
+  try {
+    const [h, s] = await Promise.all([api('/health'), api('/suppliers')]);
+    backend = true;
+    h.python.online ? setStatus('live', STATUS_OK, STATUS_TIP) : setStatus('live', 'Live · Python offline', 'Node and SQL are running; the Python service is not responding.');
+    setData(s.suppliers);
+    loadScenarios(); refreshDbStat();
+  } catch (e) {
+    backend = false;
+    setStatus('off', 'Offline demo data', 'The backend is not running, so built-in sample data is shown. Start it with: node serve.js');
+    $('#mgFields').disabled = true;
+    $('#mgNote').textContent = 'The backend isn’t running, so these tools are switched off. Start it with “node serve.js”.';
+    $('#scSave').disabled = true; $('#scName').disabled = true;
+    $('#scList').innerHTML = '<p class="fine">Saving scenarios needs the backend.</p>';
+    setData(FALLBACK);
+  }
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', (e) => {
+  const sc = e.target.closest('[data-scope]');
+  if (sc) { const k = +sc.dataset.scope, items = DATA.filter(d => d.scope === k), on = !items.every(d => d.on); scopeOn[k] = on; items.forEach(d => d.on = on); if (S.sel >= 0 && DATA[S.sel] && !DATA[S.sel].on) S.sel = -1; ui(); return; }
+  const it = e.target.closest('.item[data-i]');
+  if (it) { const i = +it.dataset.i; select(i === S.sel ? -1 : i); return; }
+  if (e.target.closest('#top3')) { S.top3only = !S.top3only; ui(); forecastSoon(); return; }
+  const apply = e.target.closest('.sc-apply');
+  if (apply) { applyScenario(+apply.dataset.red, apply.dataset.top3 === '1'); return; }
+  const delSc = e.target.closest('[data-scdel]');
+  if (delSc) { api('/scenarios/' + delSc.dataset.scdel, { method: 'DELETE' }).then(loadScenarios).catch((err) => setMsg($('#scMsg'), describe(err), 'err')); return; }
+  const del = e.target.closest('[data-del]');
+  if (del) { // two clicks to remove, so a stray tap can't delete data
+    if (!del.classList.contains('confirm')) {
+      del.classList.add('confirm'); del.textContent = 'Click again to remove';
+      setTimeout(() => { if (del.isConnected) { del.classList.remove('confirm'); del.textContent = 'Remove supplier'; } }, 3000);
+    } else removeSupplier(+del.dataset.del);
+  }
+});
+document.addEventListener('mouseover', (e) => {
+  const it = e.target.closest('.item[data-i]'); if (it && gl) gl.setHover(+it.dataset.i);
+});
+document.addEventListener('mouseout', (e) => { if (e.target.closest('.item[data-i]') && gl) gl.setHover(-1); });
+$('#red').addEventListener('input', (e) => { S.red = +e.target.value; ui(); forecastSoon(); });
+
+/* scenarios */
+async function saveScenario() {
+  const input = $('#scName'), msg = $('#scMsg'), name = input.value.trim();
+  if (!name) { setMsg(msg, 'Give the scenario a name first.', 'err'); input.focus(); return; }
+  try {
+    await api('/scenarios', { method: 'POST', json: { name, reduction: S.red, top3_only: S.top3only } });
+    input.value = ''; setMsg(msg, 'Saved.', 'ok'); await loadScenarios();
+  } catch (err) { setMsg(msg, describe(err), 'err'); }
+}
+$('#scSave').addEventListener('click', saveScenario);
+$('#scName').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); saveScenario(); } });
+
+/* add a supplier */
+$('#addForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f = e.currentTarget, msg = $('#addMsg'), btn = f.querySelector('.primary');
+  btn.disabled = true; setMsg(msg, 'Saving…');
+  try {
+    const r = await api('/suppliers', { method: 'POST', json: Object.fromEntries(new FormData(f)) });
+    f.reset();
+    await reloadSuppliers();
+    setMsg(msg, `Added ${r.supplier.name}.`, 'ok');
+    const i = DATA.findIndex((d) => d.id === r.supplier.id);
+    if (i >= 0) select(i);
+  } catch (err) { setMsg(msg, describe(err), 'err'); }
+  finally { btn.disabled = false; }
+});
+
+/* import a CSV: Node sends it to Python for checking, then saves the good rows */
+$('#csvFile').addEventListener('change', async (e) => {
+  const file = e.target.files[0], msg = $('#csvMsg');
+  if (!file) return;
+  if (file.size > 256 * 1024) { setMsg(msg, 'That file is larger than 256 KB.', 'err'); e.target.value = ''; return; }
+  setMsg(msg, 'Checking the file…');
+  try {
+    const r = await api('/import', { method: 'POST', csv: await file.text() });
+    await reloadSuppliers();
+    msg.className = 'msg ' + (r.rejected ? 'err' : 'ok');
+    const lines = r.errors.slice(0, 5).map((x) => `<li>${x.line ? 'Line ' + x.line + ': ' : ''}${esc(x.message)}</li>`).join('');
+    msg.innerHTML = `${r.inserted} added, ${r.updated} updated, ${r.rejected} problem${r.rejected === 1 ? '' : 's'} found.${lines ? `<ul>${lines}</ul>` : ''}`;
+  } catch (err) { setMsg(msg, describe(err), 'err'); }
+  e.target.value = ''; // lets you pick the same file again after fixing it
+});
+$('#csvTemplate').addEventListener('click', () => {
+  const csv = 'name,country,lat,lon,scope,category,emissions,trend\nExample Foundry,Kosovo,42.66,21.17,3,Metals,1200,-2\nExample Data Centre,Germany,50.11,8.68,2,Cloud hosting,800,-10\n';
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'northwind-suppliers-template.csv'; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+$('#resetBtn').addEventListener('click', async (e) => {
+  const b = e.currentTarget;
+  if (!b.dataset.armed) { // confirm with a second click
+    b.dataset.armed = '1'; b.textContent = 'Click again to reset everything';
+    setTimeout(() => { delete b.dataset.armed; b.textContent = 'Reset demo data'; }, 3000);
+    return;
+  }
+  delete b.dataset.armed; b.textContent = 'Reset demo data';
+  try { await api('/reset', { method: 'POST' }); S.sel = -1; await reloadSuppliers(); await loadScenarios(); setMsg($('#csvMsg'), 'Demo data restored.', 'ok'); }
+  catch (err) { setMsg($('#csvMsg'), describe(err), 'err'); }
+});
+
+const whoDlg = $('#whoDlg');
+$('#who').addEventListener('click', () => whoDlg.showModal());
+whoDlg.addEventListener('click', (e) => { // close only on a backdrop click, never on keyboard "clicks" (which report 0,0)
+  if (e.target !== whoDlg) return;
+  const r = whoDlg.getBoundingClientRect();
+  if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) whoDlg.close();
+});
+
+ui();
+boot();
+window.__threeReady.then((ok) => {
+  if (ok) initGL(); else { $('#loading').style.display = 'none'; $('#nogl').style.display = 'grid'; }
+});
+</script>
+</body>
+</html>

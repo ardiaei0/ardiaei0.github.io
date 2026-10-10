@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Product — AS Electronics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+  <div class="promo-ticker">
+    <div class="promo-ticker-track">
+      <span data-i18n="ticker_1">Secure checkout on every order</span>
+      <span data-i18n="ticker_2">Fast, reliable delivery</span>
+      <span data-i18n="ticker_3">Support replies within 1 business day</span>
+      <span data-i18n="ticker_1">Secure checkout on every order</span>
+      <span data-i18n="ticker_2">Fast, reliable delivery</span>
+      <span data-i18n="ticker_3">Support replies within 1 business day</span>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <div class="container header-top">
+      <a href="index.html" class="logo">AS Electronics</a>
+
+      <form class="header-search" id="header-search" role="search">
+        <input type="search" name="q" data-i18n-placeholder="search_placeholder" placeholder="Search products…">
+        <button type="submit" aria-label="Search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></button>
+      </form>
+
+      <div class="header-actions">
+        <button class="search-toggle" id="search-toggle" type="button" aria-label="Toggle search" aria-expanded="false">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </button>
+        <button class="lang-toggle" id="lang-toggle" type="button">EN</button>
+        <button class="cart-btn" id="cart-btn" aria-label="Go to checkout">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          <span class="cart-label-text" data-i18n="cart_label">Cart</span> <span class="cart-count" id="cart-count">0</span>
+        </button>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+
+    <nav class="main-nav" id="main-nav">
+      <div class="main-nav-inner container">
+        <span class="nav-menu-label" data-i18n="nav_menu_label">Menu</span>
+        <a href="index.html" data-i18n="nav_home">Home</a>
+        <div class="nav-item-dropdown">
+          <a href="products.html" data-i18n="nav_all_products">All Products</a>
+          <button class="nav-dropdown-toggle" type="button" aria-label="Toggle category list" aria-expanded="false">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+          <div class="nav-dropdown" id="nav-categories-menu"></div>
+        </div>
+        <a href="checkout.html" data-i18n="nav_checkout">Checkout</a>
+        <a href="contact.html" data-i18n="nav_contact">Contact</a>
+        <p class="nav-tagline">AS Electronics</p>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="product-detail-section">
+      <div class="container">
+        <p class="breadcrumb" id="breadcrumb"></p>
+
+        <div id="product-detail"></div>
+
+        <div class="related-block" id="related-block" hidden>
+          <h2 data-i18n="related_heading">You might also like</h2>
+          <div class="product-grid" id="related-grid"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>
+        <a href="index.html" class="logo">AS Electronics</a>
+        <p>© <span id="year"></span> AS Electronics. <span data-i18n="footer_rights">All rights reserved.</span></p>
+      </div>
+      <div class="footer-links">
+        <a href="products.html" data-i18n="nav_all_products">All Products</a>
+        <a href="checkout.html" data-i18n="nav_checkout">Checkout</a>
+        <a href="contact.html" data-i18n="nav_contact">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/products-data.js"></script>
+  <script src="assets/i18n.js"></script>
+  <script src="assets/store.js"></script>
+  <script>
+    const slug = new URLSearchParams(window.location.search).get("slug");
+    const product = getProductBySlug(slug);
+    const detailEl = document.getElementById("product-detail");
+    const breadcrumbEl = document.getElementById("breadcrumb");
+
+    if (!product) {
+      detailEl.innerHTML = `
+        <div class="not-found">
+          <h1>${t("not_found_heading")}</h1>
+          <p>${t("not_found_desc")}</p>
+          <a href="products.html" class="btn btn-primary">${t("back_to_products")}</a>
+        </div>
+      `;
+    } else {
+      document.getElementById("page-title").textContent = localizedName(product) + " — AS Electronics";
+      const category = getCategoryBySlug(product.category);
+      breadcrumbEl.innerHTML = `
+        <a href="products.html">${t("nav_all_products")}</a> ›
+        <a href="products.html?cat=${product.category}">${localizedCategoryName(category)}</a> ›
+        <span>${localizedName(product)}</span>
+      `;
+
+      const cyclableVariants = product.variants ? product.variants.filter((v) => v.image) : [];
+
+      detailEl.innerHTML = `
+        <div class="product-detail-grid">
+          <div class="product-detail-media">
+            <div class="product-detail-thumb" id="detail-thumb"${thumbStyle(product)}>${product.image ? "" : product.icon}</div>
+            ${cyclableVariants.length > 1 ? `
+            <button type="button" class="detail-thumb-arrow detail-thumb-arrow-prev" id="detail-thumb-prev" aria-label="Previous color">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+            <button type="button" class="detail-thumb-arrow detail-thumb-arrow-next" id="detail-thumb-next" aria-label="Next color">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>` : ""}
+            ${product.image && product.images ? `
+            <div class="product-gallery">
+              ${[product.image, ...product.images].map((src, i) => `
+                <button type="button" class="product-gallery-thumb${i === 0 ? " active" : ""}" data-src="${src}" style="background-image:url('${src}')" aria-label="${localizedName(product)} ${i + 1}"></button>
+              `).join("")}
+            </div>` : ""}
+          </div>
+          <div class="product-detail-info">
+            <p class="eyebrow">${localizedCategoryName(category)}</p>
+            <div class="product-title-row">
+              <h1>${localizedName(product)}</h1>
+              <button type="button" class="desc-toggle" id="desc-toggle" aria-label="Toggle description" aria-expanded="false">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </button>
+            </div>
+            ${product.condition ? `<span class="condition-badge condition-badge-inline">${localizedCondition(product)}</span>` : ""}
+            <p class="product-detail-desc" id="product-detail-desc">${localizedLong(product)}</p>
+            <span class="price price-large" id="detail-price">${formatEuro(product.price)}${product.originalPrice ? ` <span class="price-original">${formatEuro(product.originalPrice)}</span>` : ""}</span>
+            ${product.originalPrice ? `<p class="save-note">${t("you_save").replace("{amount}", formatEuro(product.originalPrice - product.price))}</p>` : ""}
+
+            ${product.variants ? `
+            <div class="variant-row">
+              <label class="variant-label" for="variant-select">${product["variant_label_" + getLang()] || product.variant_label}</label>
+              ${product.variants.length > 4 ? `
+              <select id="variant-select" class="variant-select">
+                ${product.variants.map((v) => `<option value="${v.id}">${v.label}</option>`).join("")}
+              </select>` : `
+              <div class="variant-options">
+                ${product.variants.map((v, i) => `
+                  <button type="button" class="variant-btn${i === 0 ? " active" : ""}" data-variant="${v.id}">${v.label}</button>
+                `).join("")}
+              </div>`}
+            </div>` : ""}
+
+            ${product.variants2 ? `
+            <div class="variant-row">
+              <label class="variant-label" for="variant2-select">${product["variant2_label_" + getLang()] || product.variant2_label}</label>
+              ${product.variants2.length > 4 ? `
+              <select id="variant2-select" class="variant-select">
+                ${product.variants2.map((v) => `<option value="${v.id}">${v.label}</option>`).join("")}
+              </select>` : `
+              <div class="variant-options">
+                ${product.variants2.map((v, i) => `
+                  <button type="button" class="variant2-btn${i === 0 ? " active" : ""}" data-variant2="${v.id}">${v.label}</button>
+                `).join("")}
+              </div>`}
+            </div>` : ""}
+
+            <div class="qty-row">
+              <label for="qty">${t("quantity_label")}</label>
+              <div class="qty-selector">
+                <button type="button" id="qty-minus" aria-label="Decrease quantity">−</button>
+                <input type="number" id="qty" value="1" min="1" max="20">
+                <button type="button" id="qty-plus" aria-label="Increase quantity">+</button>
+              </div>
+            </div>
+
+            <button class="btn btn-primary" id="detail-add-btn" type="button">${t("add_to_cart")}</button>
+            <p class="form-status" id="detail-status" role="status"></p>
+            <p class="delivery-note">${estimatedDeliveryText()}</p>
+
+            <div class="trust-badges">
+              <div class="trust-badge">
+                <span class="trust-badge-icon">🔒</span>
+                <div><strong>${t("trust_secure_title")}</strong><span>${t("trust_secure_desc")}</span></div>
+              </div>
+              <div class="trust-badge">
+                <span class="trust-badge-icon">🚚</span>
+                <div><strong>${t("trust_delivery_title")}</strong><span>${t("trust_delivery_desc")}</span></div>
+              </div>
+              <div class="trust-badge">
+                <span class="trust-badge-icon">💬</span>
+                <div><strong>${t("trust_support_title")}</strong><span>${t("trust_support_desc")}</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="specs-block" id="specs-block" hidden>
+          <h2>${t("product_details_heading")}</h2>
+          <table class="specs-table" id="specs-table"></table>
+        </div>
+      `;
+
+      document.querySelectorAll(".product-gallery-thumb").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document.getElementById("detail-thumb").style.backgroundImage = `url('${btn.dataset.src}')`;
+          document.querySelectorAll(".product-gallery-thumb").forEach((b) => b.classList.toggle("active", b === btn));
+        });
+      });
+
+      const descToggle = document.getElementById("desc-toggle");
+      const detailDesc = document.getElementById("product-detail-desc");
+      if (descToggle && detailDesc) {
+        descToggle.addEventListener("click", () => {
+          const isOpen = detailDesc.classList.toggle("open");
+          descToggle.classList.toggle("open", isOpen);
+          descToggle.setAttribute("aria-expanded", String(isOpen));
+        });
+      }
+
+      const qtyInput = document.getElementById("qty");
+      document.getElementById("qty-minus").addEventListener("click", () => {
+        qtyInput.value = Math.max(1, parseInt(qtyInput.value || "1", 10) - 1);
+      });
+      document.getElementById("qty-plus").addEventListener("click", () => {
+        qtyInput.value = Math.min(20, parseInt(qtyInput.value || "1", 10) + 1);
+      });
+
+      let selectedVariant = product.variants ? product.variants[0] : null;
+      const selectVariant = (id) => {
+        selectedVariant = product.variants.find((v) => v.id === id);
+        document.getElementById("detail-price").textContent = formatEuro(selectedVariant.price);
+        if (selectedVariant.image) {
+          document.getElementById("detail-thumb").style.backgroundImage = `url('${selectedVariant.image}')`;
+        }
+      };
+      const variantSelect = document.getElementById("variant-select");
+      const syncVariantUI = (id) => {
+        selectVariant(id);
+        if (variantSelect) variantSelect.value = id;
+        document.querySelectorAll(".variant-btn").forEach((b) => b.classList.toggle("active", b.dataset.variant === id));
+      };
+      document.querySelectorAll(".variant-btn").forEach((btn) => {
+        btn.addEventListener("click", () => syncVariantUI(btn.dataset.variant));
+      });
+      if (variantSelect) variantSelect.addEventListener("change", () => syncVariantUI(variantSelect.value));
+
+      const thumbPrev = document.getElementById("detail-thumb-prev");
+      const thumbNext = document.getElementById("detail-thumb-next");
+      if (thumbPrev && thumbNext) {
+        const cycleVariant = (direction) => {
+          const idx = cyclableVariants.findIndex((v) => v.id === selectedVariant.id);
+          const nextIdx = (idx + direction + cyclableVariants.length) % cyclableVariants.length;
+          syncVariantUI(cyclableVariants[nextIdx].id);
+        };
+        thumbPrev.addEventListener("click", () => cycleVariant(-1));
+        thumbNext.addEventListener("click", () => cycleVariant(1));
+      }
+
+      let selectedVariant2 = product.variants2 ? product.variants2[0] : null;
+      const selectVariant2 = (id) => {
+        selectedVariant2 = product.variants2.find((v) => v.id === id);
+      };
+      document.querySelectorAll(".variant2-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          selectVariant2(btn.dataset.variant2);
+          document.querySelectorAll(".variant2-btn").forEach((b) => b.classList.toggle("active", b === btn));
+        });
+      });
+      const variant2Select = document.getElementById("variant2-select");
+      if (variant2Select) variant2Select.addEventListener("change", () => selectVariant2(variant2Select.value));
+
+      document.getElementById("detail-add-btn").addEventListener("click", () => {
+        const qty = Math.max(1, parseInt(qtyInput.value || "1", 10));
+        const keyParts = [product.slug, selectedVariant ? selectedVariant.id : "", selectedVariant2 ? selectedVariant2.id : ""];
+        while (keyParts.length > 1 && keyParts[keyParts.length - 1] === "") keyParts.pop();
+        const cartKey = keyParts.join("|");
+        addToCart(cartKey, qty);
+        document.getElementById("detail-status").textContent =
+          t("added_qty_msg").replace("{qty}", qty).replace("{name}", getCartItem(cartKey).name);
+      });
+
+      if (product.specs && product.specs.length > 0) {
+        document.getElementById("specs-block").hidden = false;
+        document.getElementById("specs-table").innerHTML = specsTableHtml(product);
+      }
+
+      const related = getRelatedProducts(product, 3);
+      if (related.length > 0) {
+        document.getElementById("related-block").hidden = false;
+        const relatedGrid = document.getElementById("related-grid");
+        relatedGrid.innerHTML = related.map(productCardHtml).join("");
+        wireAddButtons(relatedGrid);
+      }
+    }
+  </script>
+</body>
+</html>
